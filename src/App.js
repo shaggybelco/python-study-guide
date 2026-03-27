@@ -79,6 +79,26 @@ export default function App() {
     ['completedChapters','xp','earnedBadges','quizScores','challengeDone'].forEach(k => localStorage.removeItem('pysg_' + k));
   };
 
+  // ─── STREAK TRACKING ─────────────────────────────────────────────────────────
+  useEffect(() => {
+    const today = new Date().toISOString().slice(0, 10);
+    const streakDays = loadProgress('streakDays', []);
+    if (streakDays[streakDays.length - 1] !== today) {
+      const updated = [...streakDays, today].slice(-30);
+      saveProgress('streakDays', updated);
+      let streak = 1;
+      for (let i = updated.length - 1; i > 0; i--) {
+        const curr = new Date(updated[i]);
+        const prev = new Date(updated[i - 1]);
+        const diff = (curr - prev) / (1000 * 60 * 60 * 24);
+        if (diff === 1) streak++;
+        else break;
+      }
+      if (streak >= 3) awardBadge('streak_3');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const selectChapter = (ch) => {
     setCurrentChapter(ch);
     setQuizMode(false);
@@ -91,17 +111,24 @@ export default function App() {
   };
 
   const handleQuizSubmit = (score) => {
-    setQuizScores(prev=>({...prev,[currentChapter.id]:score}));
-    const earned = score * 20;
-    awardXP(earned, `Chapter ${currentChapter.id} Quiz`);
-    const newCompleted = [...completedChapters];
-    if (!newCompleted.includes(currentChapter.id)) newCompleted.push(currentChapter.id);
-    setCompletedChapters(newCompleted);
-    if (newCompleted.length===1) awardBadge('first_step');
-    if (newCompleted.length===4) awardBadge('half_way');
-    if (newCompleted.length===chapters.length) awardBadge('python_pro');
+    const alreadyCompleted = completedChapters.includes(currentChapter.id);
+    // Only update best score
+    const prevScore = quizScores[currentChapter.id];
+    if (prevScore === undefined || score > prevScore) {
+      setQuizScores(prev=>({...prev,[currentChapter.id]:score}));
+    }
+    // Only award XP on first completion
+    if (!alreadyCompleted) {
+      const earned = score * 20;
+      awardXP(earned, `Chapter ${currentChapter.id} Quiz`);
+      const newCompleted = [...completedChapters, currentChapter.id];
+      setCompletedChapters(newCompleted);
+      if (newCompleted.length===1) awardBadge('first_step');
+      if (newCompleted.length===4) awardBadge('half_way');
+      if (newCompleted.length===chapters.length) awardBadge('python_pro');
+      if (newCompleted.length>=3) awardBadge('on_fire');
+    }
     if (score===currentChapter.quiz.length) awardBadge('quiz_master');
-    if (newCompleted.length>=3) awardBadge('on_fire');
   };
 
   const filteredChapters = levelFilter==='All' ? chapters : chapters.filter(c=>c.level===levelFilter);

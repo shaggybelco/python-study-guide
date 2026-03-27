@@ -247,7 +247,12 @@ export default function TypingGame({ onAwardXP, onAwardBadge }) {
       <div>
         <div style={{ marginBottom: 20 }}>
           <h2 style={{ fontWeight: 800, fontSize: 20, margin: "0 0 2px" }}>⌨️ Code Typing Practice</h2>
-          <p style={{ color: "#888", fontSize: 14, margin: "0 0 16px" }}>Type real Python code to build muscle memory and speed!</p>
+          <p style={{ color: "#888", fontSize: 14, margin: "0 0 8px" }}>Type real Python code to build muscle memory and speed!</p>
+          {'ontouchstart' in window && (
+            <div style={{ background: "#fff8f0", border: "2px solid #F7A84F", borderRadius: 10, padding: "8px 14px", marginBottom: 12, fontSize: 13, color: "#8a6d3b" }}>
+              📱 <strong>Note:</strong> This game works best with a physical keyboard. On mobile/tablet, the experience may be limited.
+            </div>
+          )}
           {bestWPM > 0 && (
             <div style={{ background: "#f0fff8", border: "2px solid #4FC78A", borderRadius: 12, padding: "10px 16px", marginBottom: 16, display: "flex", alignItems: "center", gap: 10 }}>
               <span style={{ fontSize: 24 }}>🏆</span>
